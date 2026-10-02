@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build (JDK 21)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 安装 JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: 配置 Gradle 缓存
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 构建
+        run: sh gradlew build --no-daemon
+
+      # shadowJar（无 classifier）是最终构件，*-plain.jar 不对外
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: cc-core
+          path: |
+            build/libs/*.jar
+            !build/libs/*-plain.jar
+          if-no-files-found: error
+          retention-days: 14
+
+      # 打 tag 时把 shadowJar 发布到 GitHub Packages，供各附属仓 compileOnly 解析
+      - name: 发布到 GitHub Packages（仅 tag）
+        if: startsWith(github.ref, 'refs/tags/')
+        run: sh gradlew publish --no-daemon
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
