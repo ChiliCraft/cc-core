@@ -124,6 +124,11 @@ public final class CraftPlayerProfile implements PlayerProfile {
         return modeSwitchAt;
     }
 
+    @Override
+    public long createdAt() {
+        return createdAt;
+    }
+
     // ---------- 写方法（仅主线程；公开给核心内部服务，附属不可见本类） ----------
 
     public void setMode(GameMode mode) {

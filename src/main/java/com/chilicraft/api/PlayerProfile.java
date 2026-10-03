@@ -32,4 +32,7 @@ public interface PlayerProfile {
 
     /** 上次模式切换时间（epoch 毫秒，0 = 从未切换） */
     long modeSwitchAt();
+
+    /** 建档时间（epoch 毫秒，账号年龄 = now - createdAt；新档为建档当刻） */
+    long createdAt();
 }
